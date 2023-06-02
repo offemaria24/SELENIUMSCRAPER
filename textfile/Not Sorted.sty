@@ -1,0 +1,62 @@
+from selenium import webdriver
+from bs4 import BeautifulSoup as soup
+import time
+from selenium.webdriver.chrome.options import Options
+
+url = 'https://www.lazada.com.ph/products/cartelo-slider-2022-new-cool-non-slip-wear-resistant-and-lightweight-indoor-unisex-slipper-i2378337440-s16340320708.html?spm=a2o4l.home.just4u.2.29b82030hZ3qdY&&scm=1007.17519.162103.0&pvid=59e99281-af34-4da7-848a-56eabb9a6f47&search=0&clickTrackInfo=pvid%3A59e99281-af34-4da7-848a-56eabb9a6f47%3Bchannel_id%3A0000%3Bmt%3Ahot%3Bitem_id%3A2378337440%3Bself_ab_id%3A162103%3Bself_app_id%3A7519%3Blayer_buckets%3A5437.25236_955.3634_955.3631_6059.28889%3Bpos%3A1%3B'
+
+chrome_options = Options()
+browser = webdriver.Chrome('D:/4thyear/Cd/chromedriver', options=chrome_options)
+browser.get(url)
+time.sleep(0.1)
+
+# Create an empty list to store the headlines and image URLs
+headlines_list = []
+image_urls = []
+image2_urls = [] 
+
+# Extract headlines and add them to the list
+page_soup = soup(browser.page_source, 'html.parser')
+headlines = page_soup.findAll('div', attrs={"class": "item-content"})
+for item in headlines:
+    top = item.div
+    text_headlines = top.text
+    headlines_list.append(text_headlines)
+
+# Save the headlines to a text file
+filename = 'headlines.txt'
+with open(filename, 'w', encoding='utf-8') as file:
+    file.write('\n'.join(headlines_list))
+
+print("Data saved to", filename)
+
+# Extract review images URLs and add them to the list
+review_images = page_soup.findAll('div', attrs={"class": "review-image"})
+for image in review_images:
+    img = image.find('img')
+    if img:
+        image_url = img['src']
+        image_urls.append(image_url)
+
+# Save the review image URLs to a text file
+filename = 'review-images.txt'
+with open(filename, 'w', encoding='utf-8') as file:
+    file.write('\n'.join(image_urls))
+
+print("Data saved to", filename)
+
+# Extract MERCHANTS IMAGES
+merchant_images = page_soup.findAll('div', attrs={"class": "gallery-preview-panel__content"})
+
+for image in merchant_images:
+    img = image.find('img')
+    if img:
+        image_url = img['src']  # Retrieve the 'src' attribute of the 'img' tag
+        image2_urls.append(image_url)  # Append the image URL to the list
+
+# Save the MERCHANTS IMAGES
+filename = 'merchant_product_images.txt'
+with open(filename, 'w', encoding='utf-8') as file:
+    file.write('\n'.join(image2_urls))
+
+print("Data saved to", filename)
