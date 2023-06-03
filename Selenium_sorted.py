@@ -17,27 +17,22 @@ class Scraper:
     def __del__(self):
         self.browser.quit()
 
-    def __scroll_to_middle(self, speed=8):
-        # Scroll down to the center of 50% of the page height
-        page_height = self.browser.execute_script("return document.body.scrollHeight")
-        target_scroll_position = int(page_height * 0.8)
+    def __scroll_down_page(self, speed=8):
         current_scroll_position, new_height = 0, 1
-        while current_scroll_position <= target_scroll_position:
+        while current_scroll_position <= new_height:
             current_scroll_position += speed
             self.browser.execute_script("window.scrollTo(0, {});".format(current_scroll_position))
             new_height = self.browser.execute_script("return document.body.scrollHeight")
-            if current_scroll_position >= target_scroll_position:
-                time.sleep(5)  # Wait for the content to load at the center of the scroll
 
     def scrape(self):
         self.browser.get(self.url)
         time.sleep(0.1)
-        self.__scroll_to_middle(speed=5)
+        self.__scroll_down_page(speed=10)
 
         # Create empty lists to store the text reviews and their corresponding image reviews
         text_reviews = []
         image_reviews = []
-        image_merchant = []
+        image2_urls = []
 
         # Extract text reviews and add them to the list
         page_soup = soup(self.browser.page_source, 'html.parser')
@@ -46,18 +41,11 @@ class Scraper:
             text = review.div.text.strip()
             text_reviews.append(text)
 
-            review_image_div = review.find_next('div', attrs={"class": "review-image"})
+            review_image_div = review.find('div', class_="review-image")
             if review_image_div:
                 img = review_image_div.find('img')
                 if img:
-                    # Click on the image to load the lazyloaded image
-                    self.browser.execute_script("arguments[0].scrollIntoView();", review_image_div)
-                    WebDriverWait(self.browser, 10).until(EC.visibility_of(img))
-                    img.click()
-                    time.sleep(2)  # Wait for the image to load
-
-                    # Get the source of the clicked image
-                    image_url = img.get_attribute('src')
+                    image_url = img['src']
                     image_reviews.append(image_url)
                 else:
                     image_reviews.append('No Image Review Found')
@@ -70,12 +58,12 @@ class Scraper:
             img = image.find('img')
             if img:
                 image_url = img['src']
-                image_merchant.append(image_url)
+                image2_urls.append(image_url)
 
         # Save the merchant images to a separate text file
         merchant_filename = 'Merchant-product.txt'
         with open(merchant_filename, 'w', encoding='utf-8') as merchant_file:
-            for image_url in image_merchant:
+            for image_url in image2_urls:
                 merchant_file.write("Merchant Image: " + image_url + "\n\n")
 
         print("Merchant images saved to", merchant_filename)
