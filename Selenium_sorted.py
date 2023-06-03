@@ -37,7 +37,7 @@ class Scraper:
         # Create empty lists to store the text reviews and their corresponding image reviews
         text_reviews = []
         image_reviews = []
-        image2_urls = []
+        image_merchant = []
 
         # Extract text reviews and add them to the list
         page_soup = soup(self.browser.page_source, 'html.parser')
@@ -63,12 +63,12 @@ class Scraper:
             img = image.find('img')
             if img:
                 image_url = img['src']
-                image2_urls.append(image_url)
+                image_merchant.append(image_url)
 
         # Save the merchant images to a separate text file
         merchant_filename = 'Merchant-product.txt'
         with open(merchant_filename, 'w', encoding='utf-8') as merchant_file:
-            for image_url in image2_urls:
+            for image_url in image_merchant:
                 merchant_file.write("Merchant Image: " + image_url + "\n\n")
 
         print("Merchant images saved to", merchant_filename)
