@@ -50,7 +50,14 @@ class Scraper:
             if review_image_div:
                 img = review_image_div.find('img')
                 if img:
-                    image_url = img['src']
+                    # Click on the image to load the lazyloaded image
+                    self.browser.execute_script("arguments[0].scrollIntoView();", review_image_div)
+                    WebDriverWait(self.browser, 10).until(EC.visibility_of(img))
+                    img.click()
+                    time.sleep(2)  # Wait for the image to load
+
+                    # Get the source of the clicked image
+                    image_url = img.get_attribute('src')
                     image_reviews.append(image_url)
                 else:
                     image_reviews.append('No Image Review Found')
